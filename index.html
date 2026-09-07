@@ -168,6 +168,45 @@
     }
   </style>
 </head>
+  <!-- FULLSCREEN ZERO-KNOWLEDGE ENCRYPTED LOCK SCREEN -->
+  <div id="vaultLockScreen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#090d16]/95 backdrop-blur-2xl transition-all duration-300">
+    <div class="w-full max-w-sm rounded-3xl border border-slate-800 bg-[#0f172a]/90 shadow-2xl p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden">
+      
+      <!-- Subtle ambient glow behind lock -->
+      <div class="absolute -top-16 inset-x-0 h-32 bg-brand-500/20 blur-3xl rounded-full pointer-events-none"></div>
+
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 mb-4 ring-1 ring-white/20">
+        <i data-lucide="shield-check" class="w-7 h-7"></i>
+      </div>
+
+      <h2 class="text-lg font-black text-white tracking-tight" id="lockScreenTitle">مساحة مازن المحمية</h2>
+      <p class="text-xs text-slate-400 mt-1 mb-5 leading-relaxed" id="lockScreenSubtitle">
+        البيانات مشفرة بتشفير AES-256 سحابياً ومحلياً. أدخل رمز المرور لفك التشفير.
+      </p>
+
+      <!-- PIN Input Field -->
+      <div class="w-full space-y-4">
+        <div class="relative flex items-center justify-center">
+          <input type="password" id="vaultPinInput" maxlength="12" placeholder="••••" autocomplete="current-password" autofocus
+            class="w-48 text-center tracking-[0.4em] font-mono text-2xl py-2.5 rounded-2xl bg-slate-800/80 border border-slate-700 text-white focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-inner"
+            onkeydown="if(event.key === 'Enter') handleUnlockOrSetup()">
+        </div>
+
+        <p id="lockScreenError" class="text-[11px] text-rose-400 font-bold min-h-[16px] transition-all"></p>
+
+        <button onclick="handleUnlockOrSetup()" id="lockScreenSubmitBtn" class="w-full py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-lg shadow-brand-500/25 active:scale-95 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span id="lockSubmitText">فتح وتفكيك التشفير</span>
+        </button>
+
+        <p class="text-[10px] text-slate-500 font-mono mt-3">
+          Zero-Knowledge Client-Side Encryption (AES-GCM-256)
+        </p>
+      </div>
+
+    </div>
+  </div>
+
 <body class="h-full bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen pb-20 md:pb-6">
 
   <!-- Ambient Top Glow Background -->
@@ -209,6 +248,10 @@
         <div class="flex items-center gap-1.5 sm:gap-2">
           
           <!-- Cloud Sync Button -->
+          <!-- Quick Lock Button -->
+          <button onclick="lockVaultNow()" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95" title="قفل مساحة العمل الآن وتشفيرها">
+            <i data-lucide="lock" class="w-4 h-4 text-brand-500"></i>
+          </button>
           <button id="cloudSyncHeaderBtn" onclick="openCloudSyncModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold transition-all duration-150 border border-slate-200/70 dark:border-slate-700/70 active:scale-95" title="إعدادات المزامنة السحابية">
             <span id="cloudSyncStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
             <i data-lucide="cloud" class="w-3.5 h-3.5 text-brand-500"></i>
@@ -981,7 +1024,7 @@
         courseCode: 'COE 434',
         courseName: 'الأنظمة المدمجة (Embedded Systems)',
         room: 'كلية الحاسب',
-        instructor: 'صالح مصباح',
+        instructor: 'أستاذ المقرر',
         day: 'Sunday',
         startTime: '08:00',
         endTime: '09:15',
@@ -992,7 +1035,7 @@
         courseCode: 'COE 434',
         courseName: 'الأنظمة المدمجة (Embedded Systems)',
         room: 'كلية الحاسب',
-        instructor: 'صالح مصباح',
+        instructor: 'أستاذ المقرر',
         day: 'Sunday',
         startTime: '10:00',
         endTime: '11:15',
@@ -1003,7 +1046,7 @@
         courseCode: 'COE 435',
         courseName: 'معمل الأنظمة المدمجة (Embedded Systems Lab)',
         room: 'معمل الحاسب',
-        instructor: 'صالح مصباح',
+        instructor: 'مشرف المعمل',
         day: 'Sunday',
         startTime: '12:00',
         endTime: '13:40',
@@ -1014,7 +1057,7 @@
         courseCode: 'COE 457',
         courseName: 'الحوسبة السحابية (Cloud Computing)',
         room: 'كلية الحاسب',
-        instructor: 'ليقات علي',
+        instructor: 'أستاذ المقرر',
         day: 'Tuesday',
         startTime: '14:10',
         endTime: '15:25',
@@ -1025,7 +1068,7 @@
         courseCode: 'COE 457',
         courseName: 'الحوسبة السحابية (Cloud Computing)',
         room: 'كلية الحاسب',
-        instructor: 'ليقات علي',
+        instructor: 'أستاذ المقرر',
         day: 'Thursday',
         startTime: '14:10',
         endTime: '15:25',
@@ -1033,12 +1076,42 @@
       }
     ];
 
+    const INITIAL_TASKS = [
+      {
+        id: 'task-1',
+        title: 'مراجعة تجارب معمل الأنظمة المدمجة COE 435',
+        category: 'Academic',
+        priority: 'High',
+        completed: false
+      },
+      {
+        id: 'task-2',
+        title: 'قراءة ملخص المحاضرة الأولى لمقرر الحوسبة السحابية COE 457',
+        category: 'Academic',
+        priority: 'Medium',
+        completed: false
+      },
+      {
+        id: 'task-3',
+        title: 'تطوير وتدريب نموذج مشروع التخرج (Senior Project)',
+        category: 'Project',
+        priority: 'Urgent',
+        completed: false
+      },
+      {
+        id: 'task-4',
+        title: 'حل واجب معمارية المتحكمات لمقرر الأنظمة المدمجة COE 434',
+        category: 'Academic',
+        priority: 'Medium',
+        completed: false
+      }
+    ];
 
     // Attendance data (DN limit 25% = approx 4 lectures)
     const INITIAL_ATTENDANCE = {
-      'COE 434': { absences: 0, maxAllowed: 8, name: 'الأنظمة المدمجة' },
+      'COE 434': { absences: 0, maxAllowed: 4, name: 'الأنظمة المدمجة' },
       'COE 435': { absences: 0, maxAllowed: 2, name: 'معمل الأنظمة المدمجة' },
-      'COE 457': { absences: 0, maxAllowed: 8, name: 'الحوسبة السحابية' }
+      'COE 457': { absences: 0, maxAllowed: 4, name: 'الحوسبة السحابية' }
     };
 
     // Semester 481 - 20 Weeks Dataset
@@ -1273,6 +1346,7 @@
 
     window.addEventListener('DOMContentLoaded', () => {
       initTheme();
+      initSecurityVault();
       loadState();
       initLiveClocks();
       initTimetableGrid();
@@ -1280,6 +1354,210 @@
       renderAll();
       initLucide();
     });
+
+    
+    /* ==========================================================================
+       Zero-Knowledge Client-Side Cryptographic Vault (AES-GCM-256 + PBKDF2)
+       No password or PIN is stored in the source code or in plain text anywhere!
+       ========================================================================== */
+    const VAULT_KEYS = {
+      SALT: 'mazen_vault_salt_v1',
+      VERIFIER: 'mazen_vault_verifier_v1',
+      ENCRYPTED_PAYLOAD: 'mazen_vault_payload_v1',
+      IS_SETUP: 'mazen_vault_is_setup_v1'
+    };
+
+    let activeSessionPin = null;
+    let isVaultUnlocked = false;
+
+    // Helper: Buffer to Hex & Hex to Buffer
+    function buf2hex(buffer) {
+      return Array.prototype.map.call(new Uint8Array(buffer), x => ('00' + x.toString(16)).slice(-2)).join('');
+    }
+
+    function hex2buf(hex) {
+      const bytes = new Uint8Array(Math.ceil(hex.length / 2));
+      for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+      return bytes.buffer;
+    }
+
+    // Derive AES-GCM 256 key from PIN and Salt via 100,000 PBKDF2 iterations
+    async function deriveCryptoKey(pin, saltBytes) {
+      const enc = new TextEncoder();
+      const keyMaterial = await window.crypto.subtle.importKey(
+        "raw",
+        enc.encode(pin),
+        { name: "PBKDF2" },
+        false,
+        ["deriveKey"]
+      );
+
+      return await window.crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: saltBytes,
+          iterations: 100000,
+          hash: "SHA-256"
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    // Encrypt arbitrary object with AES-GCM
+    async function encryptObject(obj, pin, saltHex = null) {
+      const enc = new TextEncoder();
+      const saltBytes = saltHex ? new Uint8Array(hex2buf(saltHex)) : window.crypto.getRandomValues(new Uint8Array(16));
+      const iv = window.crypto.getRandomValues(new Uint8Array(12));
+
+      const key = await deriveCryptoKey(pin, saltBytes);
+      const plainBytes = enc.encode(JSON.stringify(obj));
+
+      const cipherBuffer = await window.crypto.subtle.encrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        plainBytes
+      );
+
+      return {
+        salt: buf2hex(saltBytes),
+        iv: buf2hex(iv),
+        ciphertext: buf2hex(cipherBuffer)
+      };
+    }
+
+    // Decrypt AES-GCM package
+    async function decryptObject(encryptedPkg, pin) {
+      const dec = new TextDecoder();
+      const saltBytes = new Uint8Array(hex2buf(encryptedPkg.salt));
+      const iv = new Uint8Array(hex2buf(encryptedPkg.iv));
+      const cipherBytes = hex2buf(encryptedPkg.ciphertext);
+
+      const key = await deriveCryptoKey(pin, saltBytes);
+      const decryptedBuffer = await window.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        cipherBytes
+      );
+
+      return JSON.parse(dec.decode(decryptedBuffer));
+    }
+
+    // Check Vault State on Startup
+    async function initSecurityVault() {
+      const isSetup = localStorage.getItem(VAULT_KEYS.IS_SETUP);
+      const lockScreen = document.getElementById('vaultLockScreen');
+      const title = document.getElementById('lockScreenTitle');
+      const subtitle = document.getElementById('lockScreenSubtitle');
+      const submitText = document.getElementById('lockSubmitText');
+      const input = document.getElementById('vaultPinInput');
+
+      if (!isSetup) {
+        // First Time User: Prompt to create a private PIN
+        title.textContent = 'تعيين رمز الحماية والتشفير';
+        subtitle.textContent = 'أنشئ رمز مرور (PIN) خاص بك لحماية بياناتك وتشفيرها بتشفير AES-256.';
+        submitText.textContent = 'تأكيد الرمز وبدء الاستخدام';
+      } else {
+        title.textContent = 'مساحة مازن المحمية';
+        subtitle.textContent = 'أدخل رمز المرور لفك تشفير جدولك ومهامك اليومية.';
+        submitText.textContent = 'فتح وتفكيك التشفير';
+      }
+
+      lockScreen.classList.remove('hidden');
+      if (input) setTimeout(() => input.focus(), 150);
+    }
+
+    async function handleUnlockOrSetup() {
+      const input = document.getElementById('vaultPinInput');
+      const errEl = document.getElementById('lockScreenError');
+      const pin = input.value.trim();
+
+      if (!pin || pin.length < 4) {
+        errEl.textContent = 'يرجى إدخال رمز مكون من 4 خانات على الأقل.';
+        return;
+      }
+
+      errEl.textContent = 'جاري التحقق وفك التشفير...';
+
+      const isSetup = localStorage.getItem(VAULT_KEYS.IS_SETUP);
+
+      if (!isSetup) {
+        // First time Setup: Create Verifier & Encrypt Initial Workspace
+        try {
+          const verifierPkg = await encryptObject({ verify: "OK_MAZEN_WORKSPACE" }, pin);
+          localStorage.setItem(VAULT_KEYS.VERIFIER, JSON.stringify(verifierPkg));
+          localStorage.setItem(VAULT_KEYS.IS_SETUP, 'true');
+
+          activeSessionPin = pin;
+          isVaultUnlocked = true;
+
+          // Encrypt initial state to vault
+          await saveEncryptedWorkspace();
+
+          document.getElementById('vaultLockScreen').classList.add('hidden');
+          showToast('تم تعيين رمز المرور وتشفير مساحة العمل بنجاح', 'shield-check');
+        } catch (e) {
+          console.error(e);
+          errEl.textContent = 'حدث خطأ أثناء تشفير البيانات.';
+        }
+      } else {
+        // Unlock Attempt: Verify PIN against encrypted verifier
+        try {
+          const storedVerifier = JSON.parse(localStorage.getItem(VAULT_KEYS.VERIFIER));
+          const decrypted = await decryptObject(storedVerifier, pin);
+
+          if (decrypted && decrypted.verify === "OK_MAZEN_WORKSPACE") {
+            activeSessionPin = pin;
+            isVaultUnlocked = true;
+
+            // Load encrypted data if present
+            const storedPayload = localStorage.getItem(VAULT_KEYS.ENCRYPTED_PAYLOAD);
+            if (storedPayload) {
+              const decryptedData = await decryptObject(JSON.parse(storedPayload), pin);
+              if (decryptedData.lectures) lectures = decryptedData.lectures;
+              if (decryptedData.tasks) tasks = decryptedData.tasks;
+              if (decryptedData.attendance) attendance = decryptedData.attendance;
+              renderAll();
+            }
+
+            document.getElementById('vaultLockScreen').classList.add('hidden');
+            input.value = '';
+            errEl.textContent = '';
+            showToast('تم فك التشفير وفتح مساحة العمل بنجاح', 'unlock');
+          } else {
+            errEl.textContent = 'رمز المرور غير صحيح.';
+          }
+        } catch (e) {
+          errEl.textContent = 'رمز المرور غير صحيح.';
+          input.classList.add('ring-2', 'ring-rose-500');
+          setTimeout(() => input.classList.remove('ring-2', 'ring-rose-500'), 1000);
+        }
+      }
+    }
+
+    async function saveEncryptedWorkspace() {
+      if (!activeSessionPin || !isVaultUnlocked) return;
+
+      try {
+        const payload = { lectures, tasks, attendance };
+        const encrypted = await encryptObject(payload, activeSessionPin);
+        localStorage.setItem(VAULT_KEYS.ENCRYPTED_PAYLOAD, JSON.stringify(encrypted));
+        return encrypted;
+      } catch (e) {
+        console.error('Failed to encrypt workspace', e);
+      }
+    }
+
+    function lockVaultNow() {
+      activeSessionPin = null;
+      isVaultUnlocked = false;
+      const input = document.getElementById('vaultPinInput');
+      if (input) input.value = '';
+      initSecurityVault();
+      showToast('تم قفل مساحة العمل وتشفيرها', 'lock');
+    }
 
     function initLucide() {
       if (window.lucide) window.lucide.createIcons();
@@ -2270,35 +2548,29 @@
               const cloudData = doc.data();
               if (!cloudData) return;
 
-              let hasRealChanges = false;
-              if (cloudData.lectures && JSON.stringify(cloudData.lectures) !== JSON.stringify(lectures)) {
-                lectures = cloudData.lectures;
-                localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(lectures));
-                hasRealChanges = true;
-              }
-
-              if (cloudData.tasks && JSON.stringify(cloudData.tasks) !== JSON.stringify(tasks)) {
-                tasks = cloudData.tasks;
-                localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
-                hasRealChanges = true;
-              }
-
-              if (cloudData.attendance && JSON.stringify(cloudData.attendance) !== JSON.stringify(attendance)) {
-                attendance = cloudData.attendance;
-                localStorage.setItem(STORAGE_KEYS.ATTENDANCE, JSON.stringify(attendance));
-                hasRealChanges = true;
-              }
-
-              if (hasRealChanges) {
-                isIncomingCloudUpdate = true;
-                renderAll();
-                setTimeout(() => { isIncomingCloudUpdate = false; }, 200);
-
-                const now = Date.now();
-                if (now - lastToastTime > 5000) {
-                  lastToastTime = now;
-                  showToast('تمت مزامنة التعديلات السحابية', 'cloud');
-                }
+              // If encryptedVault is used and active PIN is present, decrypt it
+              if (cloudData.encryptedVault && activeSessionPin) {
+                decryptObject(cloudData.encryptedVault, activeSessionPin).then(decryptedData => {
+                  let hasRealChanges = false;
+                  if (decryptedData.lectures && JSON.stringify(decryptedData.lectures) !== JSON.stringify(lectures)) {
+                    lectures = decryptedData.lectures;
+                    hasRealChanges = true;
+                  }
+                  if (decryptedData.tasks && JSON.stringify(decryptedData.tasks) !== JSON.stringify(tasks)) {
+                    tasks = decryptedData.tasks;
+                    hasRealChanges = true;
+                  }
+                  if (decryptedData.attendance && JSON.stringify(decryptedData.attendance) !== JSON.stringify(attendance)) {
+                    attendance = decryptedData.attendance;
+                    hasRealChanges = true;
+                  }
+                  if (hasRealChanges) {
+                    isIncomingCloudUpdate = true;
+                    renderAll();
+                    setTimeout(() => { isIncomingCloudUpdate = false; }, 200);
+                    showToast('تمت المزامنة وفك التشفير السحابي بنجاح', 'shield-check');
+                  }
+                }).catch(e => console.error('Cloud decryption error', e));
               }
             } else {
               debouncedPushToCloud(0);
@@ -2323,12 +2595,13 @@
     function pushLocalStateToCloud() {
       if (!firebaseDb || !isCloudConnected || isIncomingCloudUpdate) return;
       try {
-        firebaseDb.collection('workspaces').doc('mazen_main').set({
-          lectures,
-          tasks,
-          attendance,
-          lastUpdatedClient: Date.now()
-        }, { merge: true }).catch(err => console.error('Push error', err));
+        // Encrypt locally before pushing to Firestore for true End-to-End Encryption
+        saveEncryptedWorkspace().then(encryptedPayload => {
+          firebaseDb.collection('workspaces').doc('mazen_main').set({
+            encryptedVault: encryptedPayload,
+            lastUpdatedClient: Date.now()
+          }, { merge: true }).catch(err => console.error('Push error', err));
+        });
       } catch (e) {
         console.error('Push exception', e);
       }
