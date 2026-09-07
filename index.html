@@ -1250,12 +1250,16 @@
 
     function persistLectures() {
       localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(lectures));
-      if (typeof pushLocalStateToCloud === "function") pushLocalStateToCloud();
+      if (!isIncomingCloudUpdate && typeof debouncedPushToCloud === "function") {
+        debouncedPushToCloud();
+      }
     }
 
     function persistTasks() {
       localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
-      if (typeof pushLocalStateToCloud === "function") pushLocalStateToCloud();
+      if (!isIncomingCloudUpdate && typeof debouncedPushToCloud === "function") {
+        debouncedPushToCloud();
+      }
     }
 
     /* ==========================================================================
@@ -2994,6 +2998,11 @@
       const container = document.getElementById('toastContainer');
       if (!container) return;
 
+      // Keep at most 3 toasts to prevent DOM overload
+      while (container.children.length >= 3) {
+        container.removeChild(container.firstChild);
+      }
+
       const toast = document.createElement('div');
       toast.className = 'pointer-events-auto flex items-center gap-2.5 px-4 py-2.5 rounded-2xl bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 text-xs font-medium shadow-xl backdrop-blur-md transition-all duration-300 transform translate-y-2 opacity-0';
       
@@ -3027,6 +3036,9 @@
     let firebaseDb = null;
     let isCloudConnected = false;
     let cloudUnsubscribe = null;
+    let isIncomingCloudUpdate = false;
+    let cloudPushTimeout = null;
+    let lastToastTime = 0;
 
     function initFirebaseSync() {
       const savedConfig = localStorage.getItem(CLOUD_STORAGE_KEYS.FIREBASE_CONFIG);
@@ -3051,7 +3063,6 @@
           return;
         }
 
-        // Initialize Firebase app if not already initialized
         if (!firebase.apps.length) {
           firebase.initializeApp(config);
         }
@@ -3060,34 +3071,50 @@
         isCloudConnected = true;
         updateCloudStatusUI(true);
 
-        // Setup real-time listener for multi-device sync
         if (cloudUnsubscribe) cloudUnsubscribe();
 
+        // Listen to snapshot with includeMetadataChanges to ignore local echo
         cloudUnsubscribe = firebaseDb.collection('workspaces').doc('mazen_main')
-          .onSnapshot((doc) => {
+          .onSnapshot({ includeMetadataChanges: true }, (doc) => {
+            // Ignore changes originating locally on this device
+            if (doc.metadata && doc.metadata.hasPendingWrites) {
+              return;
+            }
+
             if (doc.exists) {
               const cloudData = doc.data();
-              let hasChanges = false;
+              if (!cloudData) return;
 
+              let hasRealChanges = false;
+
+              // Compare and update without triggering recursive cloud push
               if (cloudData.lectures && JSON.stringify(cloudData.lectures) !== JSON.stringify(lectures)) {
                 lectures = cloudData.lectures;
-                persistLectures();
-                hasChanges = true;
+                localStorage.setItem(STORAGE_KEYS.TIMETABLE, JSON.stringify(lectures));
+                hasRealChanges = true;
               }
 
               if (cloudData.tasks && JSON.stringify(cloudData.tasks) !== JSON.stringify(tasks)) {
                 tasks = cloudData.tasks;
-                persistTasks();
-                hasChanges = true;
+                localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
+                hasRealChanges = true;
               }
 
-              if (hasChanges) {
+              if (hasRealChanges) {
+                isIncomingCloudUpdate = true;
                 renderAll();
-                showToast('تمت المزامنة السحابية بنجاح', 'cloud');
+                setTimeout(() => { isIncomingCloudUpdate = false; }, 200);
+
+                // Throttle toasts so they don't spam
+                const now = Date.now();
+                if (now - lastToastTime > 4000) {
+                  lastToastTime = now;
+                  showToast('تمت مزامنة التعديلات السحابية', 'cloud-check');
+                }
               }
             } else {
-              // Initial upload of local state to cloud
-              pushLocalStateToCloud();
+              // Document doesn't exist yet on cloud, upload initial state once
+              debouncedPushToCloud(0);
             }
           }, (err) => {
             console.error('Firestore sync error', err);
@@ -3100,21 +3127,30 @@
       }
     }
 
+    function debouncedPushToCloud(delay = 500) {
+      if (!firebaseDb || !isCloudConnected || isIncomingCloudUpdate) return;
+      
+      clearTimeout(cloudPushTimeout);
+      cloudPushTimeout = setTimeout(() => {
+        pushLocalStateToCloud();
+      }, delay);
+    }
+
     function pushLocalStateToCloud() {
-      if (!firebaseDb || !isCloudConnected) return;
+      if (!firebaseDb || !isCloudConnected || isIncomingCloudUpdate) return;
 
       try {
         firebaseDb.collection('workspaces').doc('mazen_main').set({
           lectures: lectures,
           tasks: tasks,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          lastUpdatedClient: Date.now()
         }, { merge: true }).then(() => {
-          console.log('Cloud sync pushed successfully');
+          console.log('Synced to cloud successfully');
         }).catch(err => {
-          console.error('Failed to push state to cloud', err);
+          console.error('Cloud push failed', err);
         });
       } catch (e) {
-        console.error('Push state exception', e);
+        console.error('Exception during cloud push', e);
       }
     }
 
