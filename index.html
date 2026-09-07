@@ -80,6 +80,14 @@
       display: inline-block;
       unicode-bidi: isolate;
     }
+    
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
     /* Custom Modern Smooth Scrollbars */
     ::-webkit-scrollbar {
       width: 5px;
@@ -360,9 +368,9 @@
 
     </div>
 
-    <!-- Desktop Navigation Tabs (Hidden on mobile, bottom bar handles mobile) -->
-    <div class="hidden md:flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3">
-      <nav class="flex items-center gap-1 p-1 rounded-2xl bg-slate-100/90 dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800/80" aria-label="Tabs">
+    <!-- Main Navigation Tabs (Touch-Scrollable on Mobile & Desktop) -->
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto no-scrollbar">
+      <nav class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800/80 min-w-max" aria-label="Tabs">
         <button onclick="switchView('timetable')" id="tab-btn-timetable" class="view-tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm">
           <i data-lucide="grid" class="w-4 h-4"></i>
           <span>الجدول الأسبوعي</span>
@@ -660,7 +668,7 @@
   </main>
 
   <!-- Mobile Bottom Navigation Bar (iOS / Android Style) -->
-  <nav class="md:hidden fixed bottom-0 inset-x-0 z-50 glass-bottom-bar border-t border-slate-200/80 dark:border-slate-800/80 px-2 py-1.5 flex items-center justify-around safe-bottom">
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-[60] glass-bottom-bar border-t border-slate-200/80 dark:border-slate-800/80 px-2 py-2 flex items-center justify-around pointer-events-auto shadow-2xl" style="padding-bottom: max(env(safe-area-inset-bottom, 10px), 10px);">
     <button onclick="switchView('timetable')" id="m-nav-timetable" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-brand-600 dark:text-brand-400 active:scale-90 transition-transform">
       <i data-lucide="grid" class="w-5 h-5"></i>
       <span class="text-[10px] font-bold">الجدول</span>
@@ -688,7 +696,7 @@
   </nav>
 
   <!-- Collapsible Floating Pomodoro Focus Drawer -->
-  <div id="pomodoroDrawer" class="fixed bottom-16 md:bottom-4 left-4 z-50 transition-all duration-300 transform translate-y-full opacity-0">
+  <div id="pomodoroDrawer" class="fixed bottom-20 md:bottom-4 left-4 z-40 transition-all duration-300 transform translate-y-full opacity-0 pointer-events-none">
     <div class="w-80 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl shadow-2xl p-4 relative">
       <div class="flex items-center justify-between mb-3">
         <div class="flex items-center gap-2">
@@ -973,7 +981,7 @@
         courseCode: 'COE 434',
         courseName: 'الأنظمة المدمجة (Embedded Systems)',
         room: 'كلية الحاسب',
-        instructor: 'أستاذ المقرر',
+        instructor: 'صالح مصباح',
         day: 'Sunday',
         startTime: '08:00',
         endTime: '09:15',
@@ -984,7 +992,7 @@
         courseCode: 'COE 434',
         courseName: 'الأنظمة المدمجة (Embedded Systems)',
         room: 'كلية الحاسب',
-        instructor: 'أستاذ المقرر',
+        instructor: 'صالح مصباح',
         day: 'Sunday',
         startTime: '10:00',
         endTime: '11:15',
@@ -995,7 +1003,7 @@
         courseCode: 'COE 435',
         courseName: 'معمل الأنظمة المدمجة (Embedded Systems Lab)',
         room: 'معمل الحاسب',
-        instructor: 'مشرف المعمل',
+        instructor: 'صالح مصباح',
         day: 'Sunday',
         startTime: '12:00',
         endTime: '13:40',
@@ -1006,7 +1014,7 @@
         courseCode: 'COE 457',
         courseName: 'الحوسبة السحابية (Cloud Computing)',
         room: 'كلية الحاسب',
-        instructor: 'أستاذ المقرر',
+        instructor: 'ليقات علي',
         day: 'Tuesday',
         startTime: '14:10',
         endTime: '15:25',
@@ -1017,7 +1025,7 @@
         courseCode: 'COE 457',
         courseName: 'الحوسبة السحابية (Cloud Computing)',
         room: 'كلية الحاسب',
-        instructor: 'أستاذ المقرر',
+        instructor: 'ليقات علي',
         day: 'Thursday',
         startTime: '14:10',
         endTime: '15:25',
@@ -1025,42 +1033,12 @@
       }
     ];
 
-    const INITIAL_TASKS = [
-      {
-        id: 'task-1',
-        title: 'مراجعة تجارب معمل الأنظمة المدمجة COE 435',
-        category: 'Academic',
-        priority: 'High',
-        completed: false
-      },
-      {
-        id: 'task-2',
-        title: 'قراءة ملخص المحاضرة الأولى لمقرر الحوسبة السحابية COE 457',
-        category: 'Academic',
-        priority: 'Medium',
-        completed: false
-      },
-      {
-        id: 'task-3',
-        title: 'تطوير وتدريب نموذج مشروع التخرج (Senior Project)',
-        category: 'Project',
-        priority: 'Urgent',
-        completed: false
-      },
-      {
-        id: 'task-4',
-        title: 'حل واجب معمارية المتحكمات لمقرر الأنظمة المدمجة COE 434',
-        category: 'Academic',
-        priority: 'Medium',
-        completed: false
-      }
-    ];
 
     // Attendance data (DN limit 25% = approx 4 lectures)
     const INITIAL_ATTENDANCE = {
-      'COE 434': { absences: 0, maxAllowed: 4, name: 'الأنظمة المدمجة' },
+      'COE 434': { absences: 0, maxAllowed: 8, name: 'الأنظمة المدمجة' },
       'COE 435': { absences: 0, maxAllowed: 2, name: 'معمل الأنظمة المدمجة' },
-      'COE 457': { absences: 0, maxAllowed: 4, name: 'الحوسبة السحابية' }
+      'COE 457': { absences: 0, maxAllowed: 8, name: 'الحوسبة السحابية' }
     };
 
     // Semester 481 - 20 Weeks Dataset
@@ -2173,12 +2151,13 @@
     function togglePomodoroDrawer(forceOpen = false) {
       const drawer = document.getElementById('pomodoroDrawer');
       if (!drawer) return;
-      if (forceOpen || drawer.classList.contains('translate-y-full')) {
-        drawer.classList.remove('translate-y-full', 'opacity-0');
-        drawer.classList.add('translate-y-0', 'opacity-100');
+      const isClosed = drawer.classList.contains('pointer-events-none') || drawer.classList.contains('translate-y-full');
+      if (forceOpen || isClosed) {
+        drawer.classList.remove('pointer-events-none', 'translate-y-full', 'opacity-0');
+        drawer.classList.add('pointer-events-auto', 'translate-y-0', 'opacity-100');
       } else {
-        drawer.classList.remove('translate-y-0', 'opacity-100');
-        drawer.classList.add('translate-y-full', 'opacity-0');
+        drawer.classList.remove('pointer-events-auto', 'translate-y-0', 'opacity-100');
+        drawer.classList.add('pointer-events-none', 'translate-y-full', 'opacity-0');
       }
     }
 
