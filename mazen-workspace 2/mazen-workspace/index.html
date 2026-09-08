@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Mazen Workspace - مساحة مازن الأكاديمية</title>
+  
+  <!-- PWA & Mobile Web App Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Mazen Workspace">
+  <meta name="theme-color" content="#f0f9ff">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  <!-- Google Fonts: Inter & Tajawal for Premium Arabic/English Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Tajawal:wght@400;500;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+
+
+
+  <!-- Firebase Compat SDKs for Realtime Multi-Device Cloud Sync -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js" defer></script>
+
+  <!-- Lucide Icons -->
+  <script src="lucide.min.js"></script>
+
+  <link rel="stylesheet" href="utilities.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="h-full bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen pb-20 md:pb-6">
+  <!-- FULLSCREEN ZERO-KNOWLEDGE ENCRYPTED LOCK SCREEN -->
+  <div id="vaultLockScreen" role="dialog" aria-modal="true" aria-label="مساحة مازن المحمية" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#090d16]/95 backdrop-blur-2xl transition-all duration-300">
+    <div class="w-full max-w-sm rounded-3xl border border-slate-800 bg-[#0f172a]/90 shadow-lg p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden">
+      
+      <!-- Subtle ambient glow behind lock -->
+      
+
+      <div class="w-14 h-14 rounded-2xl bg-brand-600 flex items-center justify-center text-white shadow-lg shadow-brand-500/30 mb-4 ring-1 ring-white/20">
+        <i data-lucide="shield-check" class="w-7 h-7"></i>
+      </div>
+
+      <h2 class="text-lg font-black text-white tracking-tight" id="lockScreenTitle">مساحة مازن المحمية</h2>
+      <p class="text-sm text-slate-500 mt-1 mb-5 leading-relaxed" id="lockScreenSubtitle">
+        البيانات مشفرة بتشفير AES-256 سحابياً ومحلياً. أدخل رمز المرور لفك التشفير.
+      </p>
+
+      <!-- PIN Input Field -->
+      <div class="w-full space-y-4">
+        <div class="relative flex items-center justify-center">
+          <input type="password" id="vaultPinInput" aria-label="رمز المرور" aria-describedby="lockScreenError lockScreenSubtitle" maxlength="12" placeholder="••••" autocomplete="current-password" autofocus
+            class="w-48 text-center tracking-[0.4em] font-mono text-2xl py-2.5 rounded-2xl bg-slate-800/80 border border-slate-700 text-white focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-inner"
+            onkeydown="if(event.key === 'Enter') handleUnlockOrSetup()">
+        </div>
+
+        <p role="status" aria-live="polite" id="lockScreenError" class="text-[12px] text-rose-400 font-bold min-h-[16px] transition-all"></p>
+
+        <button onclick="handleUnlockOrSetup()" id="lockScreenSubmitBtn" class="w-full py-3 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-500/25 active:scale-95 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="unlock" class="w-4 h-4"></i>
+          <span id="lockSubmitText">فتح وتفكيك التشفير</span>
+        </button>
+
+        <p class="text-[12px] text-slate-500 font-mono mt-3">
+          Zero-Knowledge Client-Side Encryption (AES-GCM-256)
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+
+
+  <a class="skip-link" href="#main-content">تجاوز إلى المحتوى</a>
+  <!-- Ambient Top Glow Background -->
+  <div class="hidden fixed top-0 inset-x-0 h-72 bg-brand-600 pointer-events-none z-0"></div>
+
+  <!-- Top Sticky Navigation Bar -->
+  <header class="sticky top-0 z-40 border-b border-slate-200/80 dark:border-slate-800/80 glass-header">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16 gap-3">
+        
+        <!-- App Brand & User Identity -->
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-brand-600 flex items-center justify-center text-white shadow-md shadow-brand-500/25 ring-1 ring-white/20 active:scale-95 transition-transform">
+            <span class="font-extrabold text-sm tracking-tighter">MW</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-black tracking-tight text-slate-900 dark:text-white text-base sm:text-lg">Mazen<span class="text-brand-500">Workspace</span></h1>
+              <span class="text-[12px] font-bold px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-950/80 text-brand-600 dark:text-brand-400 border border-brand-200/80 dark:border-brand-800/80">481</span>
+            </div>
+            <p class="text-[12px] text-slate-500 dark:text-slate-500 hidden sm:block">هندسة الحاسب • جدول المحاضرات • تقويم الفصل</p>
+          </div>
+        </div>
+
+        <!-- Live Clock & Date Badge (Hidden on very small mobile to save space) -->
+        <div class="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-sm">
+          <div class="flex items-center gap-1.5 text-slate-600 dark:text-slate-300 font-medium">
+            <i data-lucide="calendar" class="w-3.5 h-3.5 text-brand-500"></i>
+            <span id="currentDateDisplay">الاثنين، 7 سبتمبر 2026</span>
+          </div>
+          <span class="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+          <div class="flex items-center gap-1.5 text-slate-900 dark:text-slate-100 font-mono font-semibold">
+            <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-500 live-pulse"></i>
+            <span id="currentTimeDisplay">--:--:--</span>
+          </div>
+        </div>
+
+        <!-- Quick Top Actions (Cloud Sync, Theme, Backup, Add) -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          
+          <!-- Cloud Sync Button -->
+          <!-- Quick Lock Button -->
+          <button onclick="lockVaultNow()" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95" title="قفل مساحة العمل الآن وتشفيرها">
+            <i data-lucide="lock" class="w-4 h-4 text-brand-500"></i>
+          </button>
+          <button id="cloudSyncHeaderBtn" onclick="openCloudSyncModal()" class="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-100/90 dark:bg-slate-800/90 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-sm font-semibold transition-all duration-150 border border-slate-200/70 dark:border-slate-700/70 active:scale-95" title="إعدادات المزامنة السحابية">
+            <span id="cloudSyncStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <i data-lucide="cloud" class="w-3.5 h-3.5 text-brand-500"></i>
+            <span class="hidden sm:inline text-[12px]" id="cloudSyncStatusText">مزامنة سحابية</span>
+          </button>
+
+          <!-- Backup & Restore Trigger -->
+          <div class="relative">
+            <button id="backupMenuBtn" onclick="toggleBackupMenu()" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95" title="النسخ الاحتياطي واستيراد البيانات">
+              <i data-lucide="database" class="w-4 h-4"></i>
+            </button>
+            <div id="backupDropdown" class="hidden absolute left-0 sm:right-auto sm:left-0 mt-2 w-56 rounded-2xl bg-white dark:bg-[#0f172a] shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 text-right">
+              <div class="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                <p class="text-sm font-bold text-slate-900 dark:text-white">إدارة البيانات</p>
+                <p class="text-[12px] text-slate-500 dark:text-slate-500">تصدير أو استعادة جدولك ومهامك</p>
+              </div>
+              <button onclick="exportDataBackup()" class="w-full text-right px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2">
+                <i data-lucide="download" class="w-3.5 h-3.5 text-indigo-500"></i> تصدير نسخة احتياطية (JSON)
+              </button>
+              <label class="w-full text-right px-3 py-2 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 cursor-pointer">
+                <i data-lucide="upload" class="w-3.5 h-3.5 text-emerald-500"></i> استيراد نسخة احتياطية
+                <input type="file" id="importJsonInput" accept=".json" class="hidden" onchange="importDataBackup(event)">
+              </label>
+              <div class="border-t border-slate-100 dark:border-slate-800 my-1"></div>
+              <button onclick="confirmResetMockData()" class="w-full text-right px-3 py-2 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 flex items-center gap-2">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-rose-500"></i> إعادة ضبط الجدول الافتراضي
+              </button>
+            </div>
+          </div>
+
+          <!-- Theme Toggle (Light / Dark) -->
+          <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700 active:scale-95" title="تبديل الوضع الليلي / النهاري">
+            <i data-lucide="sun" id="sunIcon" class="w-4 h-4 hidden text-amber-500"></i>
+            <i data-lucide="moon" id="moonIcon" class="w-4 h-4 hidden text-indigo-400"></i>
+          </button>
+
+          <!-- Primary Add Button -->
+          <button onclick="openAddLectureModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-sm font-bold shadow-md shadow-brand-500/25 transition-all">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">إضافة محاضرة</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main id="main-content" tabindex="-1" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 space-y-6 relative z-10">
+
+    <!-- Top Highlight Cards (Up Next & Daily Momentum & Semester Pulse) -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+      
+      <!-- "Up Next" Dynamic Card (7 cols) -->
+      <div id="upNextCard" class="md:col-span-7 rounded-2xl p-5 relative overflow-hidden transition-all duration-200 border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] shadow-apple-card dark:shadow-apple-card-dark">
+        <!-- Ambient subtle glow -->
+        
+        
+        <div class="flex items-center justify-between mb-3 relative z-10">
+          <div class="flex items-center gap-2">
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[12px] font-bold bg-brand-50 dark:bg-brand-950/80 text-brand-600 dark:text-brand-400 border border-brand-200/80 dark:border-brand-800/80">
+              <span class="w-1.5 h-1.5 rounded-full bg-brand-500 live-pulse"></span>
+              <span id="upNextStatusLabel">المحاضرة القادمة</span>
+            </span>
+            <span class="text-sm text-slate-500 dark:text-slate-500 font-medium hidden sm:inline">جامعة القصيم • الفصل 481</span>
+          </div>
+          <span id="upNextCountdownChip" class="px-2.5 py-1 rounded-xl text-sm font-mono font-bold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/60">
+            جاري الحساب...
+          </span>
+        </div>
+
+        <div id="upNextContent" class="relative z-10">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <h2 id="upNextCourseCode" class="text-xl font-black text-slate-900 dark:text-white tracking-tight font-mono">COE 434</h2>
+                <span id="upNextColorBadge" class="w-2.5 h-2.5 rounded-full bg-cyan-500"></span>
+              </div>
+              <p id="upNextCourseName" class="text-sm font-semibold text-slate-600 dark:text-slate-300">الأنظمة المدمجة (Embedded Systems)</p>
+              
+              <div class="flex flex-wrap items-center gap-4 mt-3 text-sm text-slate-500 dark:text-slate-500">
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span id="upNextRoom">كلية الحاسب</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span id="upNextInstructor">أستاذ المقرر</span>
+                </div>
+                <div class="flex items-center gap-1.5 font-mono">
+                  <i data-lucide="clock" class="w-3.5 h-3.5 text-slate-500"></i>
+                  <span id="upNextTime">08:00 - 09:15</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex sm:flex-col items-center justify-end gap-2 pt-2 sm:pt-0">
+              <button onclick="switchView('timetable')" class="w-full sm:w-auto px-3.5 py-1.5 text-sm font-bold rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition-colors text-center active:scale-95">
+                عرض الجدول
+              </button>
+              <button onclick="togglePomodoroDrawer(true)" class="w-full sm:w-auto px-3.5 py-1.5 text-sm font-bold rounded-xl bg-brand-50 dark:bg-brand-950/60 hover:bg-brand-100 text-brand-600 dark:text-brand-300 border border-brand-200 dark:border-brand-800/80 transition-colors flex items-center justify-center gap-1 active:scale-95">
+                <i data-lucide="flame" class="w-3 h-3 text-rose-500"></i> جلسة تركيز
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Progress & Semester Snapshot (5 cols) -->
+      <div class="md:col-span-5 rounded-2xl p-5 border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] shadow-apple-card dark:shadow-apple-card-dark flex flex-col justify-between relative overflow-hidden">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+              <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+            </span>
+            <span class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-500">إنجاز اليوم والفصل</span>
+          </div>
+          <span id="completionPercentBadge" class="text-sm font-mono font-bold text-emerald-600 dark:text-emerald-400">0%</span>
+        </div>
+
+        <div class="flex items-center gap-4 my-2">
+          <!-- Circular SVG Progress Ring -->
+          <div class="relative w-16 h-16 flex-shrink-0">
+            <svg class="w-16 h-16 transform -rotate-90" viewBox="0 0 36 36">
+              <path class="text-slate-100 dark:text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+              <path id="progressCirclePath" class="text-emerald-500 transition-all duration-500 ease-out" stroke-dasharray="0, 100" stroke-width="3.5" stroke-linecap="round" stroke="currentColor" fill="none"
+                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
+            </svg>
+            <div class="absolute inset-0 flex items-center justify-center text-sm font-mono font-bold text-slate-800 dark:text-slate-100" id="progressFractionDisplay">
+              0/0
+            </div>
+          </div>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline justify-between mb-1">
+              <span class="text-sm font-bold text-slate-800 dark:text-slate-200">المهام اليومية المنجزة</span>
+              <span class="text-sm text-slate-500 dark:text-slate-500" id="pendingTasksCounter">0 متبقي</span>
+            </div>
+            <!-- Linear mini progress bar -->
+            <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+              <div id="linearProgressBar" class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: 0%"></div>
+            </div>
+            <p class="text-[12px] text-slate-500 dark:text-slate-500 mt-2 truncate" id="motivationalSubtext">
+              الفصل 481: الأسبوع 3 • خطوة بخطوة نحو التخرج 🎓
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800/80 text-sm">
+          <span class="text-slate-500 dark:text-slate-500">جلسات التركيز: <strong id="sessionStreakLabel" class="text-slate-700 dark:text-slate-300 font-mono">0 جلسة</strong></span>
+          <button onclick="switchView('semester')" class="text-brand-600 dark:text-brand-400 hover:underline font-bold flex items-center gap-1">
+            <span>تقويم الفصل 481</span> <i data-lucide="arrow-left" class="w-3 h-3"></i>
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Navigation Tabs (Touch-Scrollable on Mobile & Desktop) -->
+    <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto no-scrollbar">
+      <nav class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800/80 min-w-max" aria-label="أقسام مساحة العمل">
+        <button onclick="switchView('timetable')" id="tab-btn-timetable" class="view-tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-bold transition-all duration-150 bg-white dark:bg-slate-800 text-brand-600 dark:text-brand-400 shadow-sm">
+          <i data-lucide="grid" class="w-4 h-4"></i>
+          <span>الجدول الأسبوعي</span>
+        </button>
+        <button onclick="switchView('semester')" id="tab-btn-semester" class="view-tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all duration-150 text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="calendar-range" class="w-4 h-4"></i>
+          <span>تقويم الفصل 481</span>
+        </button>
+        <button onclick="switchView('timeline')" id="tab-btn-timeline" class="view-tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all duration-150 text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="clock" class="w-4 h-4"></i>
+          <span>المخطط الزمني وفترات الفراغ</span>
+        </button>
+        <button onclick="switchView('tasks')" id="tab-btn-tasks" class="view-tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all duration-150 text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="check-square" class="w-4 h-4"></i>
+          <span>إدارة المهام</span>
+        </button>
+        <button onclick="switchView('attendance')" id="tab-btn-attendance" class="view-tab-btn flex items-center gap-2 px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all duration-150 text-slate-600 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white">
+          <i data-lucide="user-x" class="w-4 h-4 text-amber-500"></i>
+          <span>سجل الغياب والحرمان</span>
+        </button>
+      </nav>
+
+      <div class="flex items-center gap-2">
+        <button onclick="openAddTaskModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-sm font-bold border border-slate-200/80 dark:border-slate-700/80 transition-colors active:scale-95">
+          <i data-lucide="plus" class="w-3.5 h-3.5 text-brand-500"></i>
+          <span>مهمة جديدة</span>
+        </button>
+        <button onclick="openAddLectureModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-sm transition-colors active:scale-95">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+          <span>محاضرة جديدة</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- VIEW 1: WEEKLY TIMETABLE (WITH MOBILE DAY-BY-DAY TOGGLE & FULL GRID) -->
+    <div id="view-timetable" class="view-panel space-y-4">
+      
+      <!-- Timetable Header & Mobile Mode Selector -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">الجدول الدراسي الأسبوعي</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-500">مقررات قسم هندسة الحاسب (الأحد إلى الخميس)</p>
+        </div>
+
+        <!-- Mobile Switcher: Day Cards View vs Full Table View -->
+        <div class="flex items-center gap-2">
+          <div class="flex md:hidden p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm">
+            <button onclick="setMobileTimetableMode('day')" id="btnMobileViewDay" class="px-3 py-1 rounded-lg font-bold bg-white dark:bg-slate-700 text-brand-600 dark:text-brand-400 shadow-xs">
+              عرض يومي
+            </button>
+            <button onclick="setMobileTimetableMode('grid')" id="btnMobileViewGrid" class="px-3 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-500">
+              الجدول الكامل
+            </button>
+          </div>
+
+          <div class="hidden sm:flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-md bg-cyan-50 dark:bg-cyan-950/60 text-cyan-600 dark:text-cyan-400 border border-cyan-200">COE 434 أنظمة مدمجة</span>
+            <span class="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200">COE 435 معمل</span>
+            <span class="inline-flex items-center gap-1 text-[12px] px-2 py-0.5 rounded-md bg-rose-50 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 border border-rose-200">COE 457 سحابية</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Day Cards View (Visible on mobile when day view selected) -->
+      <div id="mobileDayViewContainer" class="block md:hidden space-y-3">
+        <!-- Horizontal Scrollable Day Picker -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+          <button onclick="selectMobileDay('Sunday')" class="mobile-day-pill flex-1 py-2 px-3 rounded-xl text-sm font-bold text-center transition-all bg-brand-600 text-white shadow-sm" data-day="Sunday">
+            الأحد
+          </button>
+          <button onclick="selectMobileDay('Monday')" class="mobile-day-pill flex-1 py-2 px-3 rounded-xl text-sm font-semibold text-center transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-500" data-day="Monday">
+            الاثنين
+          </button>
+          <button onclick="selectMobileDay('Tuesday')" class="mobile-day-pill flex-1 py-2 px-3 rounded-xl text-sm font-semibold text-center transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-500" data-day="Tuesday">
+            الثلاثاء
+          </button>
+          <button onclick="selectMobileDay('Wednesday')" class="mobile-day-pill flex-1 py-2 px-3 rounded-xl text-sm font-semibold text-center transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-500" data-day="Wednesday">
+            الأربعاء
+          </button>
+          <button onclick="selectMobileDay('Thursday')" class="mobile-day-pill flex-1 py-2 px-3 rounded-xl text-sm font-semibold text-center transition-all bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-500" data-day="Thursday">
+            الخميس
+          </button>
+        </div>
+
+        <!-- Rendered Lectures for Selected Mobile Day -->
+        <div id="mobileDayLecturesList" class="space-y-2.5">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+
+      <!-- Full Weekly Timetable Grid (Desktop & Optional Mobile Grid) -->
+      <div id="desktopGridContainer" class="hidden md:block rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] shadow-apple-card dark:shadow-apple-card-dark overflow-hidden">
+        <div class="overflow-x-auto">
+          <div class="min-w-[760px]">
+            <!-- Table Header -->
+            <div class="grid grid-cols-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/80 text-sm font-bold text-slate-700 dark:text-slate-200 text-center">
+              <div class="p-3 border-l border-slate-200 dark:border-slate-800 font-mono text-slate-500">الوقت</div>
+              <div class="p-3 border-l border-slate-200 dark:border-slate-800">الأحد</div>
+              <div class="p-3 border-l border-slate-200 dark:border-slate-800">الاثنين</div>
+              <div class="p-3 border-l border-slate-200 dark:border-slate-800">الثلاثاء</div>
+              <div class="p-3 border-l border-slate-200 dark:border-slate-800">الأربعاء</div>
+              <div class="p-3">الخميس</div>
+            </div>
+
+            <!-- Hours Rows -->
+            <div id="timetableGridBody" class="divide-y divide-slate-100 dark:divide-slate-800/80 text-sm">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- VIEW 2: SEMESTER 481 CALENDAR (20 WEEKS WITH STROKE EFFECT) -->
+    <div id="view-semester" class="view-panel hidden space-y-4">
+      <div class="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] p-4 sm:p-5 shadow-apple-card dark:shadow-apple-card-dark space-y-4">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="p-1.5 rounded-lg bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-400">
+                <i data-lucide="calendar-check" class="w-4 h-4"></i>
+              </span>
+              <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">تقويم الفصل الدراسي الأول (481)</h2>
+            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-500 mt-0.5">
+              توزيع الأسابيع الدراسية من 23 أغسطس 2026م إلى 7 يناير 2027م • الأيام المنقضية مشطوبة تلقائياً (Stroke).
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700/60 text-sm">
+              <span class="text-slate-500 dark:text-slate-500">الأسبوع:</span>
+              <strong class="text-brand-600 dark:text-brand-400 font-bold mr-1" id="currentSemesterWeekBadge">الأسبوع 3</strong>
+            </div>
+            <div class="px-3 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-sm">
+              <span class="text-emerald-700 dark:text-emerald-400 font-medium">المنقضي:</span>
+              <strong class="text-emerald-700 dark:text-emerald-300 font-bold mr-1" id="semesterDaysPassedBadge">12 / 100 يوم</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div>
+          <div class="flex items-center justify-between text-sm mb-1.5">
+            <span class="font-bold text-slate-700 dark:text-slate-300">نسبة انقضاء الفصل:</span>
+            <span class="font-mono font-bold text-brand-600 dark:text-brand-400" id="semesterProgressPercent">12%</span>
+          </div>
+          <div class="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div id="semesterProgressBar" class="bg-brand-600 h-full rounded-full transition-all duration-500" style="width: 12%"></div>
+          </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
+          <div class="flex flex-wrap items-center gap-2 text-[12px]">
+            <span class="text-slate-500">الدليل:</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 line-through">منقضي</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-950 text-brand-600 dark:text-brand-400 font-bold ring-1 ring-brand-500">اليوم</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 font-medium">إجازة</span>
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 font-medium">اختبارات</span>
+          </div>
+          <button onclick="scrollToCurrentWeek()" class="px-2.5 py-1 rounded-lg bg-brand-50 dark:bg-brand-950/60 text-brand-600 dark:text-brand-300 text-[12px] font-bold hover:bg-brand-100 transition-colors flex items-center gap-1 active:scale-95">
+            <i data-lucide="target" class="w-3 h-3"></i> انتقل للأسبوع الحالي
+          </button>
+        </div>
+      </div>
+
+      <!-- 20 Weeks Grid -->
+      <div class="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] shadow-apple-card dark:shadow-apple-card-dark overflow-hidden">
+        <div class="overflow-x-auto">
+          <div class="min-w-[700px]">
+            <div class="grid grid-cols-6 border-b border-slate-200 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 text-sm font-bold text-slate-700 dark:text-slate-200 text-center py-2.5">
+              <div class="border-l border-slate-200 dark:border-slate-800">الأسبوع</div>
+              <div class="border-l border-slate-200 dark:border-slate-800">الأحد</div>
+              <div class="border-l border-slate-200 dark:border-slate-800">الاثنين</div>
+              <div class="border-l border-slate-200 dark:border-slate-800">الثلاثاء</div>
+              <div class="border-l border-slate-200 dark:border-slate-800">الأربعاء</div>
+              <div>الخميس</div>
+            </div>
+            <div id="semesterWeeksList" class="divide-y divide-slate-100 dark:divide-slate-800/80 text-sm">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 3: DAILY TIME-BLOCKING & TIMELINE -->
+    <div id="view-timeline" class="view-panel hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">المخطط الزمني وفترات الفراغ الدراسي</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-500">توزيع المحاضرات وفترات الفراغ المناسبة لجلسات التركيز</p>
+        </div>
+        
+        <div class="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm overflow-x-auto">
+          <button onclick="selectTimelineDay('Sunday')" class="timeline-day-btn px-2.5 py-1 rounded-lg font-medium transition-colors" data-day="Sunday">الأحد</button>
+          <button onclick="selectTimelineDay('Monday')" class="timeline-day-btn px-2.5 py-1 rounded-lg font-medium transition-colors" data-day="Monday">الاثنين</button>
+          <button onclick="selectTimelineDay('Tuesday')" class="timeline-day-btn px-2.5 py-1 rounded-lg font-medium transition-colors" data-day="Tuesday">الثلاثاء</button>
+          <button onclick="selectTimelineDay('Wednesday')" class="timeline-day-btn px-2.5 py-1 rounded-lg font-medium transition-colors" data-day="Wednesday">الأربعاء</button>
+          <button onclick="selectTimelineDay('Thursday')" class="timeline-day-btn px-2.5 py-1 rounded-lg font-medium transition-colors" data-day="Thursday">الخميس</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Vertical Timeline Track (8 cols) -->
+        <div class="lg:col-span-8 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] p-5 shadow-apple-card dark:shadow-apple-card-dark">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <span class="text-sm font-bold text-slate-800 dark:text-white" id="timelineActiveDayHeading">جدول يوم الأحد</span>
+            <span class="text-[12px] text-slate-500 font-mono" id="timelineStatsBadge">3 محاضرات</span>
+          </div>
+          <div id="verticalTimelineContainer" class="relative pr-6 space-y-6 before:absolute before:right-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200 dark:before:bg-slate-800">
+            <!-- Timeline items -->
+          </div>
+        </div>
+
+        <!-- Tips & Summary (4 cols) -->
+        <div class="lg:col-span-4 space-y-4">
+          <div class="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] p-5 shadow-apple-card dark:shadow-apple-card-dark space-y-2.5">
+            <div class="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
+              <i data-lucide="sparkles" class="w-4 h-4 text-amber-500"></i>
+              <span>فترات الفراغ المثالية</span>
+            </div>
+            <p class="text-sm text-slate-500 dark:text-slate-500 leading-relaxed">
+              استغل فترات الفراغ بين المحاضرات لإنجاز واجبات المعمل والمراجعة قبل العودة للمنزل.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 4: DAILY TASK MANAGER -->
+    <div id="view-tasks" class="view-panel hidden space-y-4">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">إدارة المهام والأولويات</h2>
+          <p class="text-sm text-slate-500 dark:text-slate-500">تابع أولوياتك وحدّد المهام المنجزة</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+          <div class="flex items-center p-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-sm">
+            <button onclick="setTaskStatusFilter('all')" class="task-filter-btn px-2.5 py-1 rounded-lg font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs" data-filter="all">الكل</button>
+            <button onclick="setTaskStatusFilter('today')" class="task-filter-btn px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-500" data-filter="today">اليوم</button>
+            <button onclick="setTaskStatusFilter('pending')" class="task-filter-btn px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-500" data-filter="pending">المتبقية</button>
+            <button onclick="setTaskStatusFilter('completed')" class="task-filter-btn px-2.5 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-500" data-filter="completed">المنجزة</button>
+          </div>
+
+          <button onclick="openAddTaskModal()" class="px-3 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-sm transition-colors active:scale-95 flex items-center gap-1">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>إضافة مهمة</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Add Task Bar -->
+      <form onsubmit="handleQuickAddTask(event)" class="flex items-center gap-2 p-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0f172a] shadow-xs">
+        <input type="text" id="quickTaskInput" aria-label="عنوان المهمة الجديدة" placeholder="أضف مهمة سريعة (مثلاً: إنهاء تقرير معمل الأنظمة المدمجة COE 435)..." class="flex-1 bg-transparent border-none text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none pr-3">
+        <button type="submit" class="px-3.5 py-1.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold transition-all active:scale-95">
+          إضافة
+        </button>
+      </form>
+
+      <!-- Task List Container -->
+      <div class="rounded-2xl border border-slate-200/90 dark:border-slate-800/90 bg-white dark:bg-[#0f172a] p-4 shadow-apple-card dark:shadow-apple-card-dark">
+        <div id="taskListContainer" class="space-y-2">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- VIEW 5: ACADEMIC ATTENDANCE & ABSENCE TRACKER (NEW FEATURE) -->
+    <div id="view-attendance" class="view-panel hidden space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400">
+              <i data-lucide="shield-alert" class="w-4 h-4"></i>
+            </span>
+            <h2 class="text-base font-bold text-slate-900 dark:text-white tracking-tight">سجل الغياب ومتابعة الحرمان (DN Tracker)</h2>
+          </div>
+          <p class="text-sm text-slate-500 dark:text-slate-500 mt-0.5">
+            متابعة نسبة الحضور وحساب الحد المسموح للغياب (25%) لكل مقرر وفق أنظمة جامعة القصيم
+          </p>
+        </div>
+      </div>
+
+      <!-- Attendance Cards Grid -->
+      <div id="attendanceGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Mobile Bottom Navigation Bar (iOS / Android Style) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-[60] glass-bottom-bar border-t border-slate-200/80 dark:border-slate-800/80 px-2 py-2 flex items-center justify-around pointer-events-auto shadow-lg" style="padding-bottom: max(env(safe-area-inset-bottom, 10px), 10px);">
+    <button onclick="switchView('timetable')" id="m-nav-timetable" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-brand-600 dark:text-brand-400 active:scale-90 transition-transform">
+      <i data-lucide="grid" class="w-5 h-5"></i>
+      <span class="text-[12px] font-bold">الجدول</span>
+    </button>
+    <button onclick="switchView('semester')" id="m-nav-semester" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-slate-500 active:scale-90 transition-transform">
+      <i data-lucide="calendar-range" class="w-5 h-5"></i>
+      <span class="text-[12px] font-medium">التقويم</span>
+    </button>
+    <button onclick="switchView('timeline')" id="m-nav-timeline" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-slate-500 active:scale-90 transition-transform">
+      <i data-lucide="clock" class="w-5 h-5"></i>
+      <span class="text-[12px] font-medium">المخطط</span>
+    </button>
+    <button onclick="switchView('tasks')" id="m-nav-tasks" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-slate-500 active:scale-90 transition-transform">
+      <i data-lucide="check-square" class="w-5 h-5"></i>
+      <span class="text-[12px] font-medium">المهام</span>
+    </button>
+    <button onclick="switchView('attendance')" id="m-nav-attendance" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-slate-500 active:scale-90 transition-transform">
+      <i data-lucide="user-x" class="w-5 h-5"></i>
+      <span class="text-[12px] font-medium">الغياب</span>
+    </button>
+    <button onclick="togglePomodoroDrawer(true)" class="mobile-nav-btn flex flex-col items-center gap-1 p-1.5 rounded-xl text-slate-500 active:scale-90 transition-transform">
+      <i data-lucide="flame" class="w-5 h-5 text-rose-500"></i>
+      <span class="text-[12px] font-medium">تركيز</span>
+    </button>
+  </nav>
+
+  <!-- Collapsible Floating Pomodoro Focus Drawer -->
+  <div id="pomodoroDrawer" role="region" aria-label="مؤقت التركيز" inert class="fixed bottom-20 md:bottom-4 left-4 z-40 transition-all duration-300 transform translate-y-full opacity-0 pointer-events-none">
+    <div class="w-80 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0f172a]/95 backdrop-blur-xl shadow-lg p-4 relative">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <div class="p-1 rounded-lg bg-rose-50 dark:bg-rose-950/60 text-rose-500">
+            <i data-lucide="flame" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">مؤقت بومودورو الذكي</h3>
+            <span class="text-[12px] text-slate-500 dark:text-slate-500 font-mono" id="pomodoroModeLabel">تركيز (25 دقيقة)</span>
+          </div>
+        </div>
+        <button onclick="togglePomodoroDrawer()" class="p-1 rounded-lg text-slate-500 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <!-- Mode Selector -->
+      <div class="flex items-center gap-1 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 mb-4 text-[12px]">
+        <button onclick="setPomodoroMode('work')" id="pomoWorkBtn" class="flex-1 py-1 rounded-lg font-bold bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs text-center">عمل</button>
+        <button onclick="setPomodoroMode('shortBreak')" id="pomoShortBtn" class="flex-1 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-500 text-center">استراحة قصيرة</button>
+        <button onclick="setPomodoroMode('longBreak')" id="pomoLongBtn" class="flex-1 py-1 rounded-lg font-medium text-slate-600 dark:text-slate-500 text-center">طويلة</button>
+      </div>
+
+      <!-- Digital Display & Circular Ring -->
+      <div class="flex flex-col items-center justify-center my-2 relative">
+        <div class="relative w-36 h-36 flex items-center justify-center">
+          <svg class="w-36 h-36 transform -rotate-90" viewBox="0 0 100 100">
+            <circle class="text-slate-100 dark:text-slate-800" stroke-width="6" stroke="currentColor" fill="none" r="42" cx="50" cy="50"/>
+            <circle id="pomodoroRingCircle" class="text-rose-500 transition-all duration-300" stroke-width="6" stroke-linecap="round" stroke="currentColor" fill="none" r="42" cx="50" cy="50" stroke-dasharray="264" stroke-dashoffset="0"/>
+          </svg>
+          <div class="absolute flex flex-col items-center">
+            <span id="pomodoroTimerDisplay" class="text-3xl font-black font-mono text-slate-900 dark:text-white tracking-tight">25:00</span>
+            <span id="linkedTaskLabel" class="text-[12px] text-slate-500 max-w-[110px] truncate">جلسة دراسة مركزة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="flex items-center justify-center gap-3 mt-2">
+        <button onclick="resetPomodoro()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 active:scale-95 transition-all" title="إعادة ضبط">
+          <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        </button>
+        <button onclick="togglePomodoroPlay()" id="pomodoroPlayBtn" class="px-5 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-bold text-sm shadow-md shadow-rose-500/20 flex items-center gap-2 transition-all">
+          <i data-lucide="play" id="pomodoroPlayIcon" class="w-4 h-4"></i>
+          <span id="pomodoroPlayText">بدء التركيز</span>
+        </button>
+        <button onclick="skipPomodoro()" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 active:scale-95 transition-all" title="تخطي">
+          <i data-lucide="fast-forward" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT LECTURE -->
+  <div id="lectureModal" role="dialog" aria-modal="true" aria-label="المحاضرة" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="w-full max-w-lg rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <h3 id="lectureModalTitle" class="text-sm font-bold text-slate-900 dark:text-white">إضافة محاضرة جديدة</h3>
+        <button onclick="closeLectureModal()" class="p-1 rounded-lg text-slate-500 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="lectureForm" onsubmit="saveLecture(event)" class="p-6 space-y-4 text-sm">
+        <input type="hidden" id="lectureEditId">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="lectureCourseCode" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">رمز المقرر *</label>
+            <input type="text" id="lectureCourseCode" required placeholder="مثلاً: COE 434" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+          </div>
+          <div>
+            <label for="lectureCourseName" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المقرر *</label>
+            <input type="text" id="lectureCourseName" required placeholder="مثلاً: الأنظمة المدمجة" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="lectureRoom" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">القاعة / المبنى</label>
+            <input type="text" id="lectureRoom" placeholder="مثلاً: كلية الحاسب" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+          </div>
+          <div>
+            <label for="lectureDay" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">اليوم *</label>
+            <select id="lectureDay" required class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+              <option value="Sunday">الأحد</option>
+              <option value="Monday">الاثنين</option>
+              <option value="Tuesday">الثلاثاء</option>
+              <option value="Wednesday">الأربعاء</option>
+              <option value="Thursday">الخميس</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="lectureStartTime" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">وقت البدء *</label>
+            <input type="time" id="lectureStartTime" required value="08:00" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+          </div>
+          <div>
+            <label for="lectureEndTime" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">وقت الانتهاء *</label>
+            <input type="time" id="lectureEndTime" required value="09:15" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 dark:text-slate-300 mb-2">لون تمييز المقرر</label>
+          <div class="flex items-center gap-3">
+            <label class="cursor-pointer">
+              <input type="radio" name="lectureColor" value="cyan" aria-label="سماوي" class="sr-only peer" checked>
+              <span class="w-7 h-7 rounded-full bg-cyan-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-cyan-500 block"></span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="lectureColor" value="amber" aria-label="كهرماني" class="sr-only peer">
+              <span class="w-7 h-7 rounded-full bg-amber-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-amber-500 block"></span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="lectureColor" value="rose" aria-label="وردي" class="sr-only peer">
+              <span class="w-7 h-7 rounded-full bg-rose-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-rose-500 block"></span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="lectureColor" value="indigo" aria-label="نيلي" class="sr-only peer">
+              <span class="w-7 h-7 rounded-full bg-indigo-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-indigo-500 block"></span>
+            </label>
+            <label class="cursor-pointer">
+              <input type="radio" name="lectureColor" value="emerald" aria-label="أخضر" class="sr-only peer">
+              <span class="w-7 h-7 rounded-full bg-emerald-500 peer-checked:ring-2 peer-checked:ring-offset-2 peer-checked:ring-emerald-500 block"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <button type="button" id="deleteLectureBtn" onclick="deleteCurrentLecture()" class="hidden px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 font-bold transition-colors">
+            حذف المحاضرة
+          </button>
+          <div class="flex items-center gap-2 mr-auto">
+            <button type="button" onclick="closeLectureModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 font-bold">
+              إلغاء
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-sm active:scale-95 transition-all">
+              حفظ المحاضرة
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT TASK -->
+  <div id="taskModal" role="dialog" aria-modal="true" aria-label="المهمة" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="w-full max-w-md rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-sm">
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <h3 id="taskModalTitle" class="text-sm font-bold text-slate-900 dark:text-white">إضافة مهمة جديدة</h3>
+        <button onclick="closeTaskModal()" class="p-1 rounded-lg text-slate-500 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <form id="taskForm" onsubmit="saveTask(event)" class="p-6 space-y-4">
+        <input type="hidden" id="taskEditId">
+
+        <div>
+          <label for="taskTitle" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">عنوان المهمة *</label>
+          <input type="text" id="taskTitle" required placeholder="مثلاً: حل شيت الأنظمة المدمجة" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="taskPriority" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">الأولوية</label>
+            <select id="taskPriority" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+              <option value="Urgent">عاجلة (Urgent)</option>
+              <option value="High">مرتفعة (High)</option>
+              <option value="Medium" selected>متوسطة (Medium)</option>
+              <option value="Low">منخفضة (Low)</option>
+            </select>
+          </div>
+          <div>
+            <label for="taskCategory" class="block font-bold text-slate-700 dark:text-slate-300 mb-1">التصنيف</label>
+            <select id="taskCategory" class="w-full px-3 py-2 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-none">
+              <option value="Academic" selected>أكاديمي (جامعة)</option>
+              <option value="Project">مشروع التخرج</option>
+              <option value="Personal">شخصي</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <button type="button" id="deleteTaskBtn" onclick="deleteCurrentTask()" class="hidden px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold transition-colors">
+            حذف المهمة
+          </button>
+          <div class="flex items-center gap-2 mr-auto">
+            <button type="button" onclick="closeTaskModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 font-bold">
+              إلغاء
+            </button>
+            <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold shadow-sm active:scale-95 transition-all">
+              حفظ المهمة
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CLOUD SYNC CONFIGURATION -->
+  <div id="cloudSyncModal" role="dialog" aria-modal="true" aria-label="المزامنة السحابية" class="fixed inset-0 z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm">
+    <div class="w-full max-w-lg rounded-t-3xl sm:rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 shadow-lg overflow-hidden animate-in fade-in zoom-in-95 duration-150 text-sm">
+      <div class="px-6 py-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="p-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400">
+            <i data-lucide="cloud-lightning" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-white">المزامنة اللحظية (Cloud Sync)</h3>
+        </div>
+        <button onclick="closeCloudSyncModal()" class="p-1 rounded-lg text-slate-500 hover:text-slate-600 dark:hover:text-slate-200">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-6 space-y-4">
+        <div id="cloudStatusCard" class="p-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <span id="cloudStatusIndicatorRing" class="w-3 h-3 rounded-full bg-amber-500"></span>
+            <div>
+              <p class="font-bold text-slate-800 dark:text-slate-200" id="cloudStatusTitle">غير متصل بالسحابة</p>
+              <p class="text-[12px] text-slate-500" id="cloudStatusSub">البيانات تُحفظ حالياً على هذا الجهاز فقط.</p>
+            </div>
+          </div>
+          <span class="text-[12px] font-mono px-2 py-0.5 rounded-md bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300" id="cloudStatusBadge">Local</span>
+        </div>
+
+        <div class="space-y-1.5">
+          <label for="firebaseConfigInput" class="block font-bold text-slate-700 dark:text-slate-300">
+            الصق كود إعدادات فيربيس (Firebase Config):
+          </label>
+          <textarea id="firebaseConfigInput" rows="6" placeholder='const firebaseConfig = {
+  apiKey: "AIzaSy...",
+  authDomain: "mazen-workspace.firebaseapp.com",
+  projectId: "mazen-workspace",
+  ...
+};' class="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 font-mono text-[12px] text-slate-900 dark:text-slate-100 focus:outline-none" dir="ltr"></textarea>
+        </div>
+
+        <div class="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <button type="button" onclick="disconnectCloudSync()" id="disconnectCloudBtn" class="hidden px-3 py-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold transition-colors">
+            إلغاء الربط
+          </button>
+          <div class="flex items-center gap-2 mr-auto">
+            <button type="button" onclick="closeCloudSyncModal()" class="px-4 py-2 rounded-xl text-slate-600 dark:text-slate-300 font-bold">
+              إغلاق
+            </button>
+            <button type="button" onclick="saveAndConnectFirebase()" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-sm transition-all active:scale-95">
+              حفظ وتفعيل المزامنة
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Hub -->
+  <div role="status" aria-live="polite" aria-atomic="true" id="toastContainer" class="fixed bottom-20 md:bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Application Logic -->
+
+  <script src="app.js" defer></script>
+  <script src="accessibility.js" defer></script>
+</body>
+</html>
