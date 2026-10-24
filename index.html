@@ -417,6 +417,18 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
 }
 </style>
 
+<style id="exam-review-styles">
+#workspaceExams {border:1px solid var(--line,#dceaf3);border-radius:12px;padding:18px;background:var(--surface,#fff);}
+#workspaceExams header {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;}
+#workspaceExams h2 {font-weight:700;} #workspaceExams p {font-size:13px;color:var(--muted,#475569);margin-top:6px;}
+.exam-scroll {overflow-x:auto;margin-top:12px;} #workspaceExams table {width:100%;min-width:620px;border-collapse:collapse;text-align:right;font-size:13px;}
+#workspaceExams th,#workspaceExams td {padding:12px 10px;border-bottom:1px solid var(--line,#dceaf3);vertical-align:top;}
+#workspaceExams thead {color:var(--muted,#475569);font-size:12px;} #workspaceExams small {display:block;margin-top:4px;color:var(--muted,#475569);font-size:11px;}
+#workspaceExams .exam-conflict {color:#b45309;} .dark #workspaceExams .exam-conflict {color:#fcd34d;}
+.review-slot {padding:14px;margin-block:12px;border:1px dashed var(--line,#dceaf3);border-inline-start:3px solid var(--primary,#0369a1);border-radius:10px;background:var(--soft,#f0f9ff);font-size:13px;}
+.review-slot p {margin-block:5px;color:var(--muted,#475569);}
+.review-slot button,#workspaceReviewButton {padding:8px 12px;border-radius:8px;background:var(--primary,#0369a1);color:white;font-weight:600;}
+</style>
 </head>
 <body class="h-full bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen pb-20 md:pb-6">
   <!-- FULLSCREEN ZERO-KNOWLEDGE ENCRYPTED LOCK SCREEN -->
@@ -697,6 +709,11 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
       </button>
     </aside>
 
+<section id="workspaceExams" aria-labelledby="workspaceExamsTitle">
+ <header><div><h2 id="workspaceExamsTitle">مواعيد الاختبارات · الفصل 481</h2><p>جميع المواعيد بتوقيت الرياض · 2026</p></div><button id="workspaceReviewButton" type="button" onclick="startReviewSession(25)">وقت المراجعة — 25 دقيقة</button></header>
+ <p class="exam-conflict">تنبيه: نهائي Embedded Systems Lab ونهائي Cloud Computing في الموعد نفسه: 24 ديسمبر، 1–3 مساءً. يرجى التأكد من الجدول الرسمي.</p>
+ <div class="exam-scroll" role="region" aria-label="جدول الاختبارات، يمكن تمريره أفقيًا" tabindex="0"><table><caption class="sr-only">اختبارات الميد والنهائي</caption><thead><tr><th scope="col">المقرر / الاختبار</th><th scope="col">التاريخ</th><th scope="col">الوقت</th><th scope="col">المتبقي</th></tr></thead><tbody id="workspaceExamRows"></tbody></table></div>
+</section>
     <!-- Main Navigation Tabs (Touch-Scrollable on Mobile & Desktop) -->
     <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto no-scrollbar">
       <nav class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800/80 min-w-max" aria-label="أقسام مساحة العمل">
@@ -2485,6 +2502,7 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
             <p class="text-[12px] mt-1">لا توجد محاضرات في هذا اليوم. وقت مثالي للتركيز على معمل الأنظمة ومشروع التخرج.</p>
           </div>
         `;
+        appendReviewSlots(dayLectures);
         return;
       }
 
@@ -2506,8 +2524,85 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
         container.appendChild(node);
       });
 
+      appendReviewSlots(dayLectures);
       initLucide();
     }
+
+// Academic dates are fixed in Asia/Riyadh (UTC+03:00).
+const WORKSPACE_EXAMS = [
+  {id:'intro-mid',course:'مقدمة في الحاسب الآلي',kind:'ميد',date:'2026-10-26',start:'19:00',end:null,remote:true},
+  {id:'embedded-mid',course:'Embedded Systems',kind:'ميد',date:'2026-10-28',start:'11:00',end:null},
+  {id:'cloud-mid',course:'Cloud Computing',kind:'ميد',date:'2026-10-29',start:'13:30',end:null},
+  {id:'intro-final',course:'مقدمة في الحاسب الآلي',kind:'نهائي',date:'2026-12-22',start:'08:00',end:'10:00'},
+  {id:'lab-final',course:'Embedded Systems Lab',kind:'نهائي',date:'2026-12-24',start:'13:00',end:'15:00'},
+  {id:'cloud-final',course:'Cloud Computing',kind:'نهائي',date:'2026-12-24',start:'13:00',end:'15:00'},
+  {id:'embedded-final',course:'Embedded Systems',kind:'نهائي',date:'2026-12-28',start:'08:00',end:'10:00'}
+];
+function examTimestamp(exam, end=false) {
+  return Date.parse(`${exam.date}T${end&&exam.end?exam.end:exam.start}:00+03:00`);
+}
+function examConflict(exam) {
+  return WORKSPACE_EXAMS.some(other=>other.id!==exam.id && other.date===exam.date &&
+    (exam.end&&other.end ? exam.start<other.end&&other.start<exam.end : exam.start===other.start));
+}
+function examStatus(exam, now=Date.now()) {
+  if(now>=examTimestamp(exam))return exam.end?(now>=examTimestamp(exam,true)?'انتهى موعده':'جارٍ الآن'):'بدأ موعده · وقت الانتهاء غير محدد';
+  const minutes=Math.ceil((examTimestamp(exam)-now)/60000);
+  if(minutes<60)return `بعد ${minutes} دقيقة`;
+  if(minutes<1440)return `بعد ${Math.floor(minutes/60)} ساعة و${minutes%60} دقيقة`;
+  return `بعد ${Math.floor(minutes/1440)} يوم`;
+}
+function renderWorkspaceExams() {
+  const body=document.getElementById('workspaceExamRows'); if(!body)return;
+  body.innerHTML=WORKSPACE_EXAMS.map(exam=>`<tr>
+    <th scope="row"><bdi>${escapeHTML(exam.course)}</bdi><small>${exam.kind}</small></th>
+    <td><time datetime="${exam.date}">${new Date(examTimestamp(exam)).toLocaleDateString('ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh',weekday:'short',day:'numeric',month:'long',year:'numeric'})}</time></td>
+    <td><span dir="ltr">${formatTime12h(exam.start)}${exam.end?' – '+formatTime12h(exam.end):''}</span>${!exam.end?'<small>وقت الانتهاء غير محدد</small>':''}${exam.remote?'<small>عن بُعد</small>':''}</td>
+    <td>${examStatus(exam)}${examConflict(exam)?'<small class="exam-conflict">تعارض في الموعد</small>':''}</td>
+  </tr>`).join('');
+}
+// Merge overlapping lectures before suggesting free intervals. No invented gaps.
+function reviewGaps(items) {
+  const spans=items.map(l=>[timeToMinutes(l.startTime),timeToMinutes(l.endTime)])
+    .filter(([s,e])=>Number.isFinite(s)&&Number.isFinite(e)&&e>s).sort((a,b)=>a[0]-b[0]);
+  const gaps=[]; if(!spans.length)return gaps;
+  let end=spans[0][1];
+  for(const [start,finish] of spans.slice(1)) {
+    if(start-end>=25)gaps.push({start:end,end:start,minutes:start-end});
+    end=Math.max(end,finish);
+  }
+  return gaps;
+}
+function startReviewSession(minutes=25) {
+  if(pomodoroState.isRunning) {
+    togglePomodoroDrawer(true);
+    showToast('لديك جلسة تعمل بالفعل؛ أوقفها أو أكملها أولاً.');
+    return;
+  }
+  setPomodoroMode('work');
+  pomodoroState.duration=Math.max(1,Math.min(25,minutes))*60;
+  pomodoroState.timeLeft=pomodoroState.duration;
+  updatePomodoroDisplay();
+  const label=document.getElementById('linkedTaskLabel');if(label)label.textContent='وقت المراجعة';
+  togglePomodoroDrawer(true);
+  togglePomodoroPlay();
+}
+function appendReviewSlots(dayLectures) {
+  const container=document.getElementById('verticalTimelineContainer');if(!container)return;
+  const gaps=reviewGaps(dayLectures);
+  for(const gap of gaps) {
+    const card=document.createElement('div'); card.className='review-slot';
+    card.innerHTML=`<strong>وقت المراجعة · ${gap.minutes} دقيقة متاحة</strong><p><time>${formatTime12h(minutesToTime(gap.start))} – ${formatTime12h(minutesToTime(gap.end))}</time></p><p>فترة فراغ بين المحاضرات · جلسة مقترحة 25 دقيقة</p>`;
+    const button=document.createElement('button');button.type='button';button.textContent='بدء المراجعة — 25 دقيقة';button.addEventListener('click',()=>startReviewSession(25));card.append(button);
+    const afterIndex=dayLectures.filter(l=>timeToMinutes(l.startTime)<gap.end).length;
+    const originalNodes=[...container.children].filter(el=>!el.classList.contains('review-slot'));
+    container.insertBefore(card,originalNodes[afterIndex]||null);
+  }
+  if(!gaps.length) {
+    const note=document.createElement('p');note.className='review-slot';note.textContent=dayLectures.length?'لا توجد فترة فراغ بين المحاضرات تكفي لجلسة 25 دقيقة. يمكنك بدء مراجعة مستقلة من زر وقت المراجعة.':'لا توجد محاضرات اليوم؛ يمكنك بدء مراجعة مستقلة من زر وقت المراجعة.';container.append(note);
+  }
+}
+window.addEventListener('DOMContentLoaded',()=>{renderWorkspaceExams();setInterval(renderWorkspaceExams,60000);});
 
     // View Switching Logic
     function switchView(viewName) {
