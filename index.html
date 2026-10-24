@@ -429,6 +429,15 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
 .review-slot p {margin-block:5px;color:var(--muted,#475569);}
 .review-slot button,#workspaceReviewButton {padding:8px 12px;border-radius:8px;background:var(--primary,#0369a1);color:white;font-weight:600;}
 </style>
+<style id="calendar-exam-styles">
+#semesterWeeksList .calendar-exam-day {justify-content:flex-start;background:var(--soft,#f0f9ff);opacity:1;}
+.calendar-exam-event {margin-top:8px;padding:8px;border:1px solid var(--line,#dceaf3);border-inline-start:3px solid var(--primary,#0369a1);border-radius:6px;background:var(--surface,#fff);color:var(--ink,#0f172a);text-align:right;}
+.calendar-exam-event strong,.calendar-exam-event time,.calendar-exam-event small {display:block;white-space:normal;overflow-wrap:anywhere;}
+.calendar-exam-event strong {font-size:12px;line-height:1.5;margin-block:3px;}
+.calendar-exam-event time {font-size:11px;font-variant-numeric:tabular-nums;}
+.calendar-exam-event small {font-size:10px;color:var(--muted,#475569);margin-top:3px;}
+.calendar-exam-kind {font-size:10px;font-weight:700;color:var(--primary,#0369a1);}
+</style>
 </head>
 <body class="h-full bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen pb-20 md:pb-6">
   <!-- FULLSCREEN ZERO-KNOWLEDGE ENCRYPTED LOCK SCREEN -->
@@ -711,7 +720,7 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
 
 <section id="workspaceExams" aria-labelledby="workspaceExamsTitle">
  <header><div><h2 id="workspaceExamsTitle">مواعيد الاختبارات · الفصل 481</h2><p>جميع المواعيد بتوقيت الرياض · 2026</p></div><button id="workspaceReviewButton" type="button" onclick="startReviewSession(25)">وقت المراجعة — 25 دقيقة</button></header>
- <p class="exam-conflict">تنبيه: نهائي Embedded Systems Lab ونهائي Cloud Computing في الموعد نفسه: 24 ديسمبر، 1–3 مساءً. يرجى التأكد من الجدول الرسمي.</p>
+
  <div class="exam-scroll" role="region" aria-label="جدول الاختبارات، يمكن تمريره أفقيًا" tabindex="0"><table><caption class="sr-only">اختبارات الميد والنهائي</caption><thead><tr><th scope="col">المقرر / الاختبار</th><th scope="col">التاريخ</th><th scope="col">الوقت</th><th scope="col">المتبقي</th></tr></thead><tbody id="workspaceExamRows"></tbody></table></div>
 </section>
     <!-- Main Navigation Tabs (Touch-Scrollable on Mobile & Desktop) -->
@@ -2245,7 +2254,7 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
       container.innerHTML = '';
 
       const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+      const todayStr = new Intl.DateTimeFormat('en-CA', {timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).format(now);
 
       let passedDaysCount = 0;
       let totalDaysCount = 100;
@@ -2270,6 +2279,8 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
 
         week.days.forEach((day, dIdx) => {
           const dayCol = document.createElement('div');
+          const dayExams = WORKSPACE_EXAMS.filter(exam => exam.date === day.greg);
+          dayCol.dataset.date = day.greg;
           const isPassed = day.greg < todayStr;
           const isToday = day.greg === todayStr;
 
@@ -2304,6 +2315,23 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
               ${day.holidayNote ? `<p class="text-[12px] text-emerald-600 dark:text-emerald-400 truncate mt-0.5 font-bold">${day.holidayNote}</p>` : ''}
             </div>
           `;
+          if (dayExams.length) {
+            dayCol.classList.add('calendar-exam-day');
+            dayCol.classList.remove('day-stroked');
+            dayExams.forEach(exam => {
+              const event = document.createElement('article');
+              event.className = 'calendar-exam-event';
+              event.dataset.examId = exam.id;
+              event.setAttribute('aria-label', exam.kind + ' ' + exam.course + ' ' + exam.date);
+              event.innerHTML = '<span class="calendar-exam-kind">' + escapeHTML(exam.kind) + '</span>' +
+                '<strong><bdi>' + escapeHTML(exam.course) + '</bdi></strong>' +
+                '<time datetime="' + exam.date + 'T' + exam.start + ':00+03:00">' + formatTime12h(exam.start) + (exam.end ? ' – ' + formatTime12h(exam.end) : '') + '</time>' +
+                (exam.remote ? '<small>عن بُعد</small>' : '') +
+                (!exam.end ? '<small>وقت الانتهاء غير محدد</small>' : '') +
+                (isPassed ? '<small>موعد سابق</small>' : '');
+              dayCol.appendChild(event);
+            });
+          }
           row.appendChild(dayCol);
         });
 
@@ -2535,7 +2563,7 @@ const WORKSPACE_EXAMS = [
   {id:'cloud-mid',course:'Cloud Computing',kind:'ميد',date:'2026-10-29',start:'13:30',end:null},
   {id:'intro-final',course:'مقدمة في الحاسب الآلي',kind:'نهائي',date:'2026-12-22',start:'08:00',end:'10:00'},
   {id:'lab-final',course:'Embedded Systems Lab',kind:'نهائي',date:'2026-12-24',start:'13:00',end:'15:00'},
-  {id:'cloud-final',course:'Cloud Computing',kind:'نهائي',date:'2026-12-24',start:'13:00',end:'15:00'},
+  {id:'cloud-final',course:'Cloud Computing',kind:'نهائي',date:'2026-12-29',start:'13:00',end:'15:00'},
   {id:'embedded-final',course:'Embedded Systems',kind:'نهائي',date:'2026-12-28',start:'08:00',end:'10:00'}
 ];
 function examTimestamp(exam, end=false) {
