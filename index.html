@@ -438,8 +438,38 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
 .calendar-exam-event small {font-size:10px;color:var(--muted,#475569);margin-top:3px;}
 .calendar-exam-kind {font-size:10px;font-weight:700;color:var(--primary,#0369a1);}
 </style>
+<style id="personal-ambient-styles">
+/* Personal engineering sketches: transform-only, decorative, no interaction. */
+#personalAmbient {position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;contain:strict;color:#2c789a;opacity:.19;}
+.dark #personalAmbient {color:#8dc7d8;opacity:.13;}
+.ambient-object {position:absolute;width:clamp(95px,13vw,190px);height:auto;animation:engineering-drift 32s ease-in-out infinite alternate;}
+.ambient-object-1 {top:11%;left:1%;--tilt:-14deg;animation-duration:38s;}
+.ambient-object-2 {top:5%;right:20%;width:115px;--tilt:12deg;animation-delay:-18s;}
+.ambient-object-3 {top:41%;right:-2%;width:220px;--tilt:-8deg;animation-duration:46s;animation-delay:-12s;}
+.ambient-object-4 {bottom:9%;left:17%;width:145px;--tilt:5deg;animation-delay:-24s;}
+.ambient-object-5 {top:47%;left:3%;width:125px;--tilt:-10deg;animation-duration:42s;animation-delay:-9s;}
+.ambient-object-6 {bottom:5%;right:5%;width:170px;--tilt:16deg;animation-duration:40s;animation-delay:-20s;}
+.ambient-object-7 {top:68%;right:31%;width:100px;--tilt:10deg;animation-duration:48s;animation-delay:-31s;}
+.ambient-object-8 {top:-5%;left:39%;width:190px;--tilt:85deg;animation-delay:-8s;}
+@keyframes engineering-drift {from{transform:translate3d(0,0,0) rotate(var(--tilt,0deg));}to{transform:translate3d(14px,-22px,0) rotate(calc(var(--tilt,0deg) + 5deg));}}
+html[data-ambient-paused] .ambient-object {animation-play-state:paused;}
+body:has(#vaultLockScreen:not(.hidden)) .ambient-object {animation-play-state:paused;}
+#workspaceExams {padding:0;}
+#workspaceExams > summary {cursor:pointer;list-style:none;padding:15px 18px;display:flex;align-items:center;gap:10px;font-weight:700;}
+#workspaceExams > summary::-webkit-details-marker {display:none;}
+#workspaceExams > summary::before {content:'+';font-size:21px;line-height:1;color:var(--primary,#0369a1);}
+#workspaceExams[open] > summary::before {content:'−';}
+#workspaceExams > summary small {margin:0;margin-inline-start:auto;font-weight:500;}
+#workspaceExams > summary:focus-visible {outline:2px solid var(--primary,#0369a1);outline-offset:3px;border-radius:10px;}
+#workspaceExams .exam-details-content {padding:0 18px 16px;border-top:1px solid var(--line,#dceaf3);}
+#workspaceExams .exam-details-content > header {padding-top:14px;}
+@media(max-width:767px) {#personalAmbient {opacity:.13;}.dark #personalAmbient{opacity:.10;}.ambient-object {width:110px;}.ambient-object-2,.ambient-object-5,.ambient-object-7,.ambient-object-8{display:none;}.ambient-object-3{right:-60px;}.ambient-object-4{left:-30px;}.ambient-object-6{right:-40px;}#workspaceExams > summary {padding:13px;font-size:14px;}#workspaceExams > summary small{font-size:10px;}}
+@media(prefers-reduced-motion:reduce) {.ambient-object {animation:none!important;}}
+@media print {#personalAmbient {display:none;}}
+</style>
 </head>
 <body class="h-full bg-[#f8fafc] dark:bg-[#090d16] text-slate-800 dark:text-slate-100 font-sans transition-colors duration-200 antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen pb-20 md:pb-6">
+<div id="personalAmbient" aria-hidden="true" inert><svg class="ambient-object ambient-object-1" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M65 65 40 40m55 25 25-25M65 95l-25 25m55-25 25 25"/><rect x="61" y="59" width="38" height="42" rx="13"/><path d="m70 73 10-6 10 6M72 103v9h16v-9"/><circle cx="35" cy="35" r="23"/><circle cx="125" cy="35" r="23"/><circle cx="35" cy="125" r="23"/><circle cx="125" cy="125" r="23"/><path d="M19 35h32m-16-16v32m74-16h32m-16-16v32M19 125h32m-16-16v32m74-16h32m-16-16v32"/></svg><svg class="ambient-object ambient-object-2" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="43" y="43" width="74" height="74" rx="9"/><rect x="59" y="59" width="42" height="42" rx="4"/><path d="M58 26v17m15-17v17m15-17v17m15-17v17M58 117v17m15-17v17m15-17v17m15-17v17M26 58h17m-17 15h17m-17 15h17m-17 15h17m74-45h17m-17 15h17m-17 15h17m-17 15h17"/></svg><svg class="ambient-object ambient-object-3" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M15 38h40l24 24h66M15 80h30l22 22h45v30M32 145v-28l22-22M97 17v20l18 18h30M18 16h48l20 20"/><circle cx="15" cy="38" r="4"/><circle cx="15" cy="80" r="4"/><circle cx="112" cy="136" r="4"/><circle cx="32" cy="149" r="4"/><circle cx="97" cy="13" r="4"/></svg><svg class="ambient-object ambient-object-4" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M44 94a23 23 0 0 1-4-46 34 34 0 0 1 65-4 25 25 0 0 1 15 50H44Z"/><path d="M80 95v23m0 0H40v17m40-17h40v17"/><rect x="30" y="135" width="20" height="12" rx="3"/><rect x="110" y="135" width="20" height="12" rx="3"/><path d="m69 68-9 8 9 8m22-16 9 8-9 8"/></svg><svg class="ambient-object ambient-object-5" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M12 90h20l10-30 14 60 16-85 16 85 13-60 12 30h35"/><path d="M15 35v100h130"/></svg><svg class="ambient-object ambient-object-6" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><rect x="23" y="25" width="114" height="110" rx="10"/><rect x="55" y="58" width="40" height="40" rx="4"/><path d="M35 45h35v13m25 20h28v35M75 98v24M35 112V88h20M108 40v19"/><circle cx="36" cy="38" r="3"/><circle cx="124" cy="122" r="3"/><circle cx="108" cy="36" r="4"/></svg><svg class="ambient-object ambient-object-7" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M65 65 40 40m55 25 25-25M65 95l-25 25m55-25 25 25"/><rect x="61" y="59" width="38" height="42" rx="13"/><path d="m70 73 10-6 10 6M72 103v9h16v-9"/><circle cx="35" cy="35" r="23"/><circle cx="125" cy="35" r="23"/><circle cx="35" cy="125" r="23"/><circle cx="125" cy="125" r="23"/><path d="M19 35h32m-16-16v32m74-16h32m-16-16v32M19 125h32m-16-16v32m74-16h32m-16-16v32"/></svg><svg class="ambient-object ambient-object-8" viewBox="0 0 160 160" fill="none" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round" focusable="false"><path d="M15 38h40l24 24h66M15 80h30l22 22h45v30M32 145v-28l22-22M97 17v20l18 18h30M18 16h48l20 20"/><circle cx="15" cy="38" r="4"/><circle cx="15" cy="80" r="4"/><circle cx="112" cy="136" r="4"/><circle cx="32" cy="149" r="4"/><circle cx="97" cy="13" r="4"/></svg></div>
   <!-- FULLSCREEN ZERO-KNOWLEDGE ENCRYPTED LOCK SCREEN -->
   <div id="vaultLockScreen" role="dialog" aria-modal="true" aria-label="مساحة مازن المحمية" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#090d16]/95 backdrop-blur-2xl transition-all duration-300">
     <div class="w-full max-w-sm rounded-3xl border border-slate-800 bg-[#0f172a]/90 shadow-lg p-6 sm:p-8 flex flex-col items-center text-center relative overflow-hidden">
@@ -718,11 +748,14 @@ html[data-ambient-paused] #vaultLockScreen::before { animation-play-state: pause
       </button>
     </aside>
 
-<section id="workspaceExams" aria-labelledby="workspaceExamsTitle">
+<details id="workspaceExams">
+<summary><span>مواعيد الاختبارات</span><small>7 اختبارات · عرض / إخفاء</small></summary>
+<div class="exam-details-content">
  <header><div><h2 id="workspaceExamsTitle">مواعيد الاختبارات · الفصل 481</h2><p>جميع المواعيد بتوقيت الرياض · 2026</p></div><button id="workspaceReviewButton" type="button" onclick="startReviewSession(25)">وقت المراجعة — 25 دقيقة</button></header>
 
  <div class="exam-scroll" role="region" aria-label="جدول الاختبارات، يمكن تمريره أفقيًا" tabindex="0"><table><caption class="sr-only">اختبارات الميد والنهائي</caption><thead><tr><th scope="col">المقرر / الاختبار</th><th scope="col">التاريخ</th><th scope="col">الوقت</th><th scope="col">المتبقي</th></tr></thead><tbody id="workspaceExamRows"></tbody></table></div>
-</section>
+</div>
+</details>
     <!-- Main Navigation Tabs (Touch-Scrollable on Mobile & Desktop) -->
     <div class="flex items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-3 overflow-x-auto no-scrollbar">
       <nav class="flex items-center gap-1.5 p-1 rounded-2xl bg-slate-100/90 dark:bg-[#0f172a] border border-slate-200/80 dark:border-slate-800/80 min-w-max" aria-label="أقسام مساحة العمل">
